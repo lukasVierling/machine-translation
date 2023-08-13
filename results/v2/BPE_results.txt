@@ -1,0 +1,47 @@
+Start BPE testing...
+
+Sample of English data set encoded with 1000-operations BPE 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a giant pul@@ ley sy@@ ste@@ m . </s> <s> a little girl climbing into a wooden play@@ house . </s> <s> a man in a blue shirt is standing on a ladder cleaning a window . </s> <s> two men are at the sto@@ ve preparing food . </s> <s> a man in green holds a guitar while the other man obser@@ ves his shirt . </s> <s> a man is smiling at a stuffed lion </s> <s> a t@@ rendy girl talking on her cellphone while g@@ liding s@@ low@@ ly down the street . </s> <s> a woman with a large purse is walking by </s>
+
+
+Sample of English data set encoded with 5000-operations BPE 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a giant pulley system . </s> <s> a little girl climbing into a wooden playhouse . </s> <s> a man in a blue shirt is standing on a ladder cleaning a window . </s> <s> two men are at the stove preparing food . </s> <s> a man in green holds a guitar while the other man observes his shirt . </s> <s> a man is smiling at a stuffed lion </s> <s> a trendy girl talking on her cellphone while gliding slowly down the street . </s> <s> a woman with a large purse is walking by </s>
+
+
+Sample of English data set encoded with 15000-operations BPE 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a giant pulley system . </s> <s> a little girl climbing into a wooden playhouse . </s> <s> a man in a blue shirt is standing on a ladder cleaning a window . </s> <s> two men are at the stove preparing food . </s> <s> a man in green holds a guitar while the other man observes his shirt . </s> <s> a man is smiling at a stuffed lion </s> <s> a trendy girl talking on her cellphone while gliding slowly down the street . </s> <s> a woman with a large purse is walking by </s>
+
+
+Sample of German data set encoded with 1000-operations BPE 
+<s> zwei junge weiße männer sind im freien in der nähe vieler bü@@ sche . </s> <s> mehrere männer mit schutzhelmen be@@ dienen ein antr@@ ie@@ b@@ s@@ rads@@ y@@ ste@@ m . </s> <s> ein kleines mädchen klettert in ein spiel@@ haus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer leiter und putzt ein fenster . </s> <s> zwei männer stehen am her@@ d und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen aus@@ gestopften l@@ ö@@ wen an . </s> <s> ein sch@@ ickes mädchen spricht mit dem handy während sie </s>
+
+
+Sample of German data set encoded with 5000-operations BPE 
+<s> zwei junge weiße männer sind im freien in der nähe vieler büsche . </s> <s> mehrere männer mit schutzhelmen bedienen ein antrie@@ b@@ s@@ radsystem . </s> <s> ein kleines mädchen klettert in ein spielhaus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer leiter und putzt ein fenster . </s> <s> zwei männer stehen am herd und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen ausgestopften löwen an . </s> <s> ein schickes mädchen spricht mit dem handy während sie </s>
+
+
+Sample of German data set encoded with 15000-operations BPE 
+<s> zwei junge weiße männer sind im freien in der nähe vieler büsche . </s> <s> mehrere männer mit schutzhelmen bedienen ein antriebsradsystem . </s> <s> ein kleines mädchen klettert in ein spielhaus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer leiter und putzt ein fenster . </s> <s> zwei männer stehen am herd und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen ausgestopften löwen an . </s> <s> ein schickes mädchen spricht mit dem handy während sie </s>
+
+
+Sample of German data set encoded with 1000-operations BPE (merged) 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a gi@@ an@@ t pul@@ ley s@@ yste@@ m . </s> <s> a little girl climbing into a wooden play@@ house . </s> <s> a man in a blue shirt is standing on a lad@@ der cleaning a window . </s> <s> two men are at the sto@@ ve preparing food . </s> <s> a man in green holds a guitar while the other man ob@@ ser@@ ves his shirt . </s> <s> a man is smiling at a stu@@ ffed lion </s> <s> a tren@@ d@@ y girl talking on her cellphone while g@@ liding s@@ low@@ ly down the street . </s> <s> a woman with a large pur@@ se is walking by </s>
+
+Sample of English data set encoded with 1000-operations BPE (merged) 
+<s> zwei junge weiße männer sind im freien in der nähe vieler bü@@ sche . </s> <s> mehrere männer mit schutz@@ helmen bedienen ein an@@ trie@@ b@@ s@@ rads@@ yste@@ m . </s> <s> ein kleines mädchen klettert in ein spiel@@ haus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer le@@ iter und put@@ zt ein fenster . </s> <s> zwei männer stehen am her@@ d und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen aus@@ gestop@@ ften l@@ ö@@ wen an . </s> <s> ein sch@@ ickes mädchen spricht mit dem handy während sie </s>
+
+
+Sample of German data set encoded with 5000-operations BPE (merged) 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a giant pulley system . </s> <s> a little girl climbing into a wooden play@@ house . </s> <s> a man in a blue shirt is standing on a ladder cleaning a window . </s> <s> two men are at the stove preparing food . </s> <s> a man in green holds a guitar while the other man observes his shirt . </s> <s> a man is smiling at a stuffed lion </s> <s> a trendy girl talking on her cellphone while gliding slowly down the street . </s> <s> a woman with a large purse is walking by </s>
+
+Sample of English data set encoded with 5000-operations BPE (merged) 
+<s> zwei junge weiße männer sind im freien in der nähe vieler büsche . </s> <s> mehrere männer mit schutzhelmen bedienen ein antrie@@ bs@@ radsystem . </s> <s> ein kleines mädchen klettert in ein spiel@@ haus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer leiter und putzt ein fenster . </s> <s> zwei männer stehen am herd und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen ausgestopften löwen an . </s> <s> ein schickes mädchen spricht mit dem handy während sie </s>
+
+
+Sample of German data set encoded with 15000-operations BPE (merged) 
+<s> two young , white males are outside near many bushes . </s> <s> several men in hard hats are operating a giant pulley system . </s> <s> a little girl climbing into a wooden playhouse . </s> <s> a man in a blue shirt is standing on a ladder cleaning a window . </s> <s> two men are at the stove preparing food . </s> <s> a man in green holds a guitar while the other man observes his shirt . </s> <s> a man is smiling at a stuffed lion </s> <s> a trendy girl talking on her cellphone while gliding slowly down the street . </s> <s> a woman with a large purse is walking by </s>
+
+Sample of English data set encoded with 15000-operations BPE (merged) 
+<s> zwei junge weiße männer sind im freien in der nähe vieler büsche . </s> <s> mehrere männer mit schutzhelmen bedienen ein antriebsradsystem . </s> <s> ein kleines mädchen klettert in ein spielhaus aus holz . </s> <s> ein mann in einem blauen hemd steht auf einer leiter und putzt ein fenster . </s> <s> zwei männer stehen am herd und bereiten essen zu . </s> <s> ein mann in grün hält eine gitarre , während der andere mann sein hemd ansieht . </s> <s> ein mann lächelt einen ausgestopften löwen an . </s> <s> ein schickes mädchen spricht mit dem handy während sie </s>
+
+
