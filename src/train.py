@@ -9,8 +9,16 @@ from torcheval.metrics import Perplexity, MulticlassAccuracy
 from torchsummary import summary
 from tqdm import tqdm
 
-from data.dataset import MTDataset
-from src.models import Model
+from src.pickle_loader import PickleLoader
+from data.dataset import Dataset_FFN
+from src.models import FFN
+from src.utils.pad_collate import pad_collate
+from src.search.ffn_search import beam_search
+import src
+from src.utils.metrics import Metrics
+from src.preprocessing.dictionary import START, END, PADDING
+
+from src.evaluate import BLEU_eval_FFN
 
 def train(config):
     """
@@ -47,6 +55,8 @@ def train(config):
     n_evaluate = config['n_evaluate']
     strategy = config['strategy']
     zero_bias = config['zero_bias']
+    early_stopping = config['early_stopping']
+    early_stopping_threshold = config['early_stopping_threshold']
 
     print("BPE ops: ", bpe_ops)
     print("Joined BPE: ", joined_bpe)
@@ -55,7 +65,7 @@ def train(config):
 
     #load train and dev data
     print("Loading data...")
-    train_dataset = MTDataset(
+    train_dataset = Dataset_FFN(
         train_source, 
         train_target, 
         bpe_ops = bpe_ops, 
@@ -65,7 +75,7 @@ def train(config):
         )
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    validation_dataset = MTDataset(
+    validation_dataset = Dataset_FFN(
         dev_source, 
         dev_target, 
         bpe_ops = bpe_ops, 
@@ -80,7 +90,7 @@ def train(config):
     print(f"Initialization Strategy: {strategy}")
     print(f'Zero bias: {zero_bias}')
     if model_dir is None:
-        model = Model(
+        model = FFN(
             train_dataset.get_source_vocab_size(), 
             train_dataset.get_target_vocab_size(), 
             embedding_dim,
@@ -90,7 +100,8 @@ def train(config):
             window_size,
             activation,
             strategy,
-            zero_bias)
+            zero_bias,
+            config)
     else:
         # Load the model from the given path
         model = torch.load(model_dir)
@@ -101,23 +112,51 @@ def train(config):
     model.to(device)
 
     # Define a loss function
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(ignore_index=PADDING)
     
     # Define an optimizer
     print(f"Optimizer: {optimizer}")
     if optimizer == 'adam':
+        '''
+        The Adam optimizer maintains a learning rate for each parameter in a neural network. 
+        It computes individual adaptive learning rates for each parameter by incorporating both the first 
+        and second moments of the gradients. The first moment is the average of the gradients, 
+        and the second moment is the average of the squared gradients.
+        '''
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, betas=(config['adam_beta1'], config['adam_beta2']))
         print("Betas: ", (config['adam_beta1'], config['adam_beta2'], "\n"))
     elif optimizer == 'rmsprop':
+        '''
+        The RMSProp optimizer keeps track of the magnitude of past gradients 
+        by maintaining the moving average of squared gradients. 
+        This allows it to adaptively adjust the learning rate for each parameter 
+        based on the history of gradients encountered during training.
+        '''
         optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate, weight_decay=config['weight_decay'])
         print("Weight decay: ", config['weight_decay'], "\n")
     elif optimizer == 'adagrad':
+        '''
+        The key idea behind Adagrad is that it adapts the learning rate for each parameter by giving more weight
+        to infrequent and important features. 
+        Parameters that receive large gradients will have their learning rate scaled down, 
+        while parameters with small gradients will have their learning rate scaled up.
+        '''
         optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, weight_decay=config['weight_decay'])
         print("Weight decay: ", config['weight_decay'], "\n")
     elif optimizer == 'sgd':
+        '''
+        you know this one
+        '''
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=config['momentum'], weight_decay=config['weight_decay'])
         print("Momentum: ", config['momentum'])
     elif optimizer == 'adadelta':
+        '''
+        Adadelta utilizes a running average of squared parameter updates (E[Δθ^2]). 
+        This running average acts as a momentum term that adapts the learning rate based on 
+        the historical information of parameter updates. 
+        This allows Adadelta to continue learning even when the gradients become very small.
+        Combines advatages of RMSPropo and Adagrad.
+        '''
         optimizer = torch.optim.Adadelta(model.parameters(), lr=learning_rate, weight_decay=config['weight_decay'])
         print("Weight decay: ", config['weight_decay'], "\n")
     else:
@@ -133,6 +172,8 @@ def train(config):
     halving_epsilon = config['learning_rate_performance_epsilon']
     previous_ppls = []
 
+    last_BLEU = 0
+    bleu = 0
 
     # Train the model
     print(f"Training the model for {epochs} epochs...\n")
@@ -158,7 +199,7 @@ def train(config):
             if config['checkpoints_per_epoch'] > 0:
                 if i % (len(train_loader) // config['checkpoints_per_epoch']) == 0:
                     torch.save(model, log_dir + f'/{name}/checkpoints/model_{epoch}_{i}.pt')
-                    torch.save(optimizer, log_dir + f'/{name}/checkpoints/optimizer_{epoch}_{i}.pt')
+                    torch.save(optimizer, log_dir + f'/{name}/optimizer/optimizer_{epoch}_{i}.pt')
             # Reset gradients
             optimizer.zero_grad()
             
@@ -188,6 +229,14 @@ def train(config):
                 perplexity.update(ppl_pred, ppl_label)
             multiclass_accuracy.update(prediction,label)
 
+
+        # early stopping if required
+        if early_stopping:
+            bleu = BLEU_eval_FFN(model=model, bleu_n=4, dev_source=config['raw_dev_source'], 
+                             dev_target=config['raw_dev_target'], beam_size=config['beam_size'],
+                            max_decoding_time_step=config['max_decoding_time_step'], alignment_modeling="average")
+            print("BLEU on Dev: ", bleu)
+
         # Average loss and accuracy over all batches
         loss_epoch /= len(train_loader)
         print("Average epoch loss (train): ", loss_epoch)
@@ -197,7 +246,7 @@ def train(config):
             print("Perplexity (train): ", perplexity.compute().item())
         
         # Log training metrics in tensorboard
-        log(epoch, loss_epoch, perplexity, multiclass_accuracy, writer)
+        log(epoch, loss_epoch, perplexity, multiclass_accuracy, bleu, writer)
 
         # halve learning rate if performance on dev set does not improve
         if halving:
@@ -213,9 +262,9 @@ def train(config):
                     g['lr'] = learning_rate
                     previous_ppls = []
         # save model checkpoints if checkpoints_per_epoch is not set
-        if config['checkpoints_per_epoch'] < 1 & epoch % n_checkpoint == 0:
+        if config['checkpoints_per_epoch'] < 1 and epoch % n_checkpoint == 0:
             torch.save(model, log_dir + f'/{name}/checkpoints/model_{epoch}.pt')
-            torch.save(optimizer, log_dir + f'/{name}/checkpoints/optimizer_{epoch}_{i}.pt')
+            torch.save(optimizer, log_dir + f'/{name}/optimizer/optimizer_{epoch}.pt')
         # evaluate model on dev set
         if epoch % n_evaluate == 0:
             dev_loss, dev_ppl, def_acc = evaluate(model, validation_loader, epoch, writer, device)
@@ -224,32 +273,51 @@ def train(config):
             print("Accuracy (dev): ", def_acc.item())
             print("Perplexity (dev): ", dev_ppl.item())
         print("\n")
+        
+        if early_stopping:
+            if bleu < last_BLEU - early_stopping_threshold:
+                break
+            last_BLEU = bleu
+        
     # save final model
-    torch.save(model, log_dir + f'/{name}/checkpoints/model_{epochs}.pt')
-    torch.save(optimizer, log_dir + f'/{name}/checkpoints/optimizer_{epoch}_{i}.pt')
+    torch.save(model, log_dir + f'/{name}/checkpoints/model_{epochs}_final.pt')
+    torch.save(optimizer, log_dir + f'/{name}/checkpoints/optimizer_{epochs}_final.pt')
     writer.close()
 
     print("End of training \n\n\n")
     
 
-def log(epoch, loss, perplexity, multiclass_accuracy, writer):
+def log(epoch, loss, perplexity, multiclass_accuracy, bleu=0, writer=None, mode='train'):
     """
     Log training metrics for a given epoch.
 
     Args:
         epoch (int): Current epoch number.
         loss (float): Average loss value for the epoch.
-        perplexity (Perplexity or None): Perplexity object for computing perplexity metric, or None if not applicable.
-        multiclass_accuracy (MulticlassAccuracy): MulticlassAccuracy object for computing accuracy metric.
+        perplexity (Perplexity or None or Tensor): Perplexity object for computing perplexity metric, or None if not applicable.
+        multiclass_accuracy (MulticlassAccuracy or Tensor): MulticlassAccuracy object for computing accuracy metric.
         writer (SummaryWriter): SummaryWriter object for logging metrics to TensorBoard.
+        mode (str): Mode for which to log the metrics. Must be one of 'train' or 'val'.
     Returns:
         None
     """
+    if writer is None:
+        return
     # Log training metrics
-    writer.add_scalar('Loss/train', loss, epoch)
-    if perplexity is not None:
-        writer.add_scalar('Perplexity/train', perplexity.compute(), epoch)
-    writer.add_scalar('Accuracy/train', multiclass_accuracy.compute(), epoch)
+    writer.add_scalar(f'Loss/{mode}', loss, epoch)
+    
+    if bleu > 0:
+        writer.add_scalar(f'BLEU/{mode}', bleu, epoch)
+
+    if perplexity and type(perplexity) == Perplexity:
+        writer.add_scalar(f'Perplexity/{mode}', perplexity.compute(), epoch)
+    elif perplexity < float('inf'):
+        writer.add_scalar(f'Perplexity/{mode}', perplexity, epoch)
+    
+    if type(multiclass_accuracy) == MulticlassAccuracy:
+        writer.add_scalar(f'Accuracy/{mode}', multiclass_accuracy.compute(), epoch)
+    else:
+        writer.add_scalar(f'Accuracy/{mode}', multiclass_accuracy, epoch)
 
 
 def evaluate(model, validation_loader, epoch, writer=None, device=None):
@@ -315,4 +383,3 @@ def evaluate(model, validation_loader, epoch, writer=None, device=None):
     return loss, perplexity if device != torch.device('mps') else 0, multiclass_accuracy
 
 
-            

@@ -1,0 +1,1 @@
+../rnn_type/lstm_bi.txt

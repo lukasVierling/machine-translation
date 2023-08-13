@@ -121,9 +121,9 @@ class Metrics():
         #sum over all n as in the formula
         for i in range(1,n+1):
             p = self.__modified_n_gram_precision(i,tuples)
-            if (p<=0):
-                print("P_n can't be less than 0")
-            cum += log(p,e)
+            # Changed from p<=0 -> Error to ignore p<= 0 without error message
+            if (p>0):
+                cum += log(p,e)
         #instead of *(1/n) in every summand, we just calculate *(1/n) in the end (DistributivG.)
         cum = cum * (1/n)
         return (bp * exp(cum))

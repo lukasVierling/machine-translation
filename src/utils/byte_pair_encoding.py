@@ -112,8 +112,7 @@ class BytePairEncoder():
         according to the mapping provided by the encoding rules.
         
         Args:
-            corpus (Str): The corpus to be encoded, represented as a list of sentences.
-            
+            corpus (Str): The corpus to be encoded, represented as a string.
         Returns:
             List[List[str]]: The encoded corpus, where each word is replaced with its encoded form.
         """
@@ -178,7 +177,9 @@ class BytePairEncoder():
         #TODO hier uach wider ein Wort encodiere nund das einsetzen anstatt den ganzen Text zu bearbeiten
         pool = Pool()
         # Decode the corpus
-        decoded_corpus = pool.map(self.__decode, corpus)
+        decoded_corpus = []
+        for sentence in corpus:
+            decoded_corpus += [self.decode(sentence)]
         return decoded_corpus
     
     def get_rules(self):
@@ -193,7 +194,7 @@ class BytePairEncoder():
         """
         return self.__encoding_rules
     
-    def __decode(self, sentence):
+    def decode(self, sentence):
         """
         Decodes a sentence using the Byte Pair Encoder model.
 
@@ -205,7 +206,13 @@ class BytePairEncoder():
         """
         # Sentence is a list of tokens
         # join the tokens on whitespace and remove all @@ with nothing
-        sentence = " ".join(sentence).replace("@@","")
+        sentence = " ".join(sentence) 
+        sentence = sentence.replace("@@ ","")
+        # Remove special tokens
+        sentence = sentence.replace('<s> ','')
+        sentence = sentence.replace('</s>','')
+        sentence = sentence[:-1]
+        return sentence
     
     def __encode(self, word):
         """

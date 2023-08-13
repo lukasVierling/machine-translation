@@ -1,0 +1,69 @@
+# general
+mode: train
+config: ../config/rnn_config.yml
+
+# model architecture
+model_type: rnn
+
+encoder_embedding_size: 300
+encoder_rnn_hidden_size: 200
+num_encoder_rnn_layers: 1
+encoder_dropout: 0.0
+encoder_bidirectional: on
+encoder_rnn_type: lstm
+decoder_rnn_hidden_size: 200
+num_decoder_rnn_layers: 1
+decoder_dropout: 0.0
+decoder_embedding_size: 300
+decoder_rnn_type: lstm
+attention_function: additive
+attention_lin_size: 50
+teacher_forcing_ratio: 0.5
+teacher_forcing_schedule: constant
+dropout_rate: 0.5
+
+
+# text preprocessing
+bpe_ops: 7000
+joined_bpe: False
+batch_size: 16
+is_indexed: True
+
+# optimizer
+optimizer: adam
+learning_rate: 0.001
+adam_beta1: 0.9
+adam_beta2: 0.999
+momentum: 0.9
+weight_decay: 0.0
+
+# training
+resume_training: False
+epochs: 20
+device: cpu
+clip: 1
+batch_size: 16
+
+# saving and loading models
+checkpoints_per_epoch: 0
+n_checkpoint: 1
+log_dir: ../logs
+model_path: null
+optimizer_path: null
+resume_epoch: 0
+
+# evaluation
+n_evaluate: 1
+dev_source_raw: ../data/unpreprocessed/dev/source.dev
+dev_target_raw: ../data/unpreprocessed/dev/target.dev
+beam_size: 5
+max_decoding_time_step: 100
+
+# early stopping
+early_stopping: False
+early_stopping_threshold: 0
+
+# learning rate halving
+learning_rate_halving: True
+learning_rate_patience: 3
+learning_rate_performance_epsilon: 0.01

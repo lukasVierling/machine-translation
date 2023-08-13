@@ -29,6 +29,12 @@ bpe_ops: 7000
 joined_bpe: false
 window_size: 3
 batch_alignment: uniform
-n_checkpoint: 2
+n_checkpoint: 1
 n_evaluate: 1
 checkpoints_per_epoch: 0
+early_stopping : false
+early_stopping_threshold: 0.1
+beam_size : 1
+max_decoding_time_step : 1
+raw_dev_target: ../data/unpreprocessed/dev/target.dev
+raw_dev_source: ../data/unpreprocessed/dev/source.dev

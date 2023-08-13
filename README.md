@@ -14,22 +14,40 @@ Machine translation project for the SPP 'Machine Translation' by RWTH computer s
     <li>Prof. Dr.-Ing. Hermann Ney
 </ul>
 
+## Results
+| Model | BLEU | 
+|----------|----------|
+| Feed Forward Model  |   0.213  | 
+| RNN Encoder Decoder Model | 0.322 |
+
 ## Usage
-To train the model, execute the following command:
+To train the Feed-forward model, execute the following command:
 ```
-python main.py train 
+python main.py train ff
+```
+Or train the recurrent model with:
+```
+python main.py train rnn
 ```
 You can either pass hyperparameters as arguments with the python script, e.g. :
 ```
-python main.py train --epoch 10 --optimizer adam
+python main.py train rnn --epoch 10 --optimizer adam
 ```
 Alternatively, you can provide a predefined YAML config file:
 ```
-python main.py train --config <path to config file>
+python main.py train rnn --config <path to config file>
 ```
 To train an existing model, use the following command:
 ```
-python main.py train --model <path to model>
+python main.py train rnn --model_dir <path to model> --optimizer_dir <path to optimizer>
+```
+To evaluate a model, use the following command:
+```
+python main.py evaluate rnn --path_to_folder <path to folder with model checkpoints> --model_type <model type, rnn or ff> --dest_path <path where the BLEU scores will be stored>
+```
+To translate text with a trained model, use the following command:
+```
+python decode.py --model_type <rnn or ff> --model_path <path to model> --source_path <path to source>
 ```
 
 ## Part 1
@@ -65,4 +83,31 @@ Finally, we tune the model's hyperparameters and experiment with different archi
 
 ![Model Architecture](results/FFModel.png)
 
+## Part 4
+With the use of the obtained translation model, we now perform search to employ the model in a real-world translation scenario. We first implement a scoring function, that -- given a model and source/target sentence pairs -- calculates a score for how likely the model predicts the given target sentence from each source sentence. Speaking, we implement the greedy and beam search algorithms for decoding aswell as a early stopping functionality in our training script. Finally, we evaluate our own model on real translation tasks with the newly implemented search methods. 
+<ul>
+    <li>Scoring function to calculate a given model's score of a source/target sentence pairs
+    <li>Searching algoriths, featuring greedy search and beam search
+    <li>Decoding interface that the user can interact with to input into the system
+    <li>Early Stopping
+    <li>Automatically evaluating a folder of model checkpoints with BLEU
+    <li>Examining the BLEU values with our self-implemented model
+</ul>
+
+## Part 5
+RNNs are crucial in encoder-decoder structures for machine translation due to their ability to capture sequential dependencies. Unlike FNNs, RNNs excel at modeling contextual information, making them more suitable for variable-length input sequences. Their recurrent nature enables them to retain memory of past inputs, capturing long-range dependencies and improving translation quality. RNNs with attention mechanisms dynamically focus on relevant information, aligning source and target languages for better translations. Compared to simple FNNs, RNNs in encoder-decoder structures achieve more accurate and fluent machine translations.
+
+## Part 6
+To enhance the performance of our model we did some hyperparameter tuning. Hyperparemter tuning is an essential part of machine learning, as it allows us to find the best possible configuration for our model. We used the following hyperparameters:
+<ul>
+    <li>Number of layers
+    <li>Number of hidden units
+    <li>Size of embedding layer
+    <li>Dropout rate
+    <li>Batch size
+    <li>BPE encoding
+    <li>Layer normalization
+    <li>Gradient clipping
+    <li>Teacher forcing
+</ul>
 

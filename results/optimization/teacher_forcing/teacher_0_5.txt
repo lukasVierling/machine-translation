@@ -1,0 +1,1 @@
+../embedding_dim_test/embedding_300_300.txt

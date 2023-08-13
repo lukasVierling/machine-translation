@@ -3,9 +3,10 @@ import os
 import gzip
 from typing import List
 
-START = 0  # 0 -> start of sentence <s>
-UNK = 2   # 2  -> unknown word <UNK>
-END = 1    # 1  -> end of sentende </s>
+START = 1  # 1 -> start of sentence <s>
+UNK = 3   # 3  -> unknown word <UNK>
+END = 2    # 2  -> end of sentende </s>
+PADDING = 0 # 0 -> padding <PAD>
 
 class Dictionary(): 
     """
@@ -44,10 +45,10 @@ class Dictionary():
                 print("Dictionary has been read.")
             except (IOError, OSError) as e:
                 print(f"Error reading dictionary: {str(e)}")
-                self.__mapping = {"<UNK>": UNK, "<s>": START, "</s>": END}
+                self.__mapping = {"<UNK>": UNK, "<s>": START, "</s>": END, "<PAD>": PADDING}
         else:
             # Create a new dictionary
-            self.__mapping = {"<UNK>": UNK, "<s>": START, "</s>": END}
+            self.__mapping = {"<UNK>": UNK, "<s>": START, "</s>": END, "<PAD>": PADDING}
 
         # Print the dictionary
         print(self.__mapping)
@@ -127,13 +128,23 @@ class Dictionary():
             return []
         
         return [[self.getIndex(token) for token in sentence] for sentence in param]
+    
+    def remove_mapping(self, param: List[List[str]]) -> List[List[int]]:
+        """
+        Applies the mapping to the specified list of sentences and returns the result.
 
-        # Old version
-        source = param
-        for i in range(len(source)):
-            for j in range(len(source[i])): 
-                source[i][j] = self.getIndex(source[i][j])
-        return source
+        Args:
+            param List[List[int]]: List of int-sentences, where each integer represents
+                the index of the token in the input sentence
+
+        Returns:
+            (List[List[str]]): List of sentences to apply the mapping to, where each
+                sentence is encoded as a list of tokens
+        """
+        if not param:
+            return []
+        
+        return [[self.getToken(index) for index in sentence] for sentence in param]
     
     def getKeys(self):
         """
@@ -148,7 +159,7 @@ class Dictionary():
         """
         Resets the dictionary to its initial state (only contains <UNK>, <s> and </s>) and saves it
         """
-        self.__mapping = dict({"<UNK>": UNK ,"<s>": START, "</s>" : END})
+        self.__mapping = dict({"<UNK>": UNK ,"<s>": START, "</s>" : END,"<PAD>": PADDING})
         self.save()
     
     def save(self): 

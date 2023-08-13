@@ -1,4 +1,9 @@
-from typing import List, Callable, Tuple, Any
+import sys
+sys.path.append("..")
+import src.utils.alignment as alignment
+from src.utils.get_list_item_safe import get_list_item_safe
+
+from typing import List, Callable, Tuple, Any, Union
 import torch
 from tqdm import tqdm
 
@@ -19,7 +24,7 @@ class Batcher():
 
     """
     def __init__(self, source: List[List[int]], target: List[List[int]], 
-                 batch_size: int = 200, window: int = 4, alignment: str = "uniform", 
+                 batch_size: int = 200, window: int = 4, alignment: Union[str, Callable[[int], int]] = "uniform", 
                  torch_device = None) -> None:
         """
         Iniates a Batcher object for batching of source and target sentences.
@@ -36,7 +41,7 @@ class Batcher():
                 (for more info see https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device)
         """
         
-        assert len(source) == len(target), "Error: Source and target must have equal amount of sentences"
+        assert len(source) == len(target), f"Error: Source and target must have equal amount of sentences. Source: {len(source)}, Target: {len(target)} "
 
         self.__source, self.__target = self.__filter_empty_sentences(source, target)
 
@@ -85,34 +90,14 @@ class Batcher():
             in the target sentence and returns the corresponding index in the
             source sentence for alignment.
         """
-        I = len(target) - 1
-        J = len(source) - 1
-
         if self.__alignment == "uniform":
-            k = float(J) / float(I)
-            def uniform_alignment(i: int) -> int:
-                """
-                Monotonic alignment function for aligning the target sentence with
-                the source sentence.
-
-                Args:
-                    i (int): The index in the target sentence to align
-
-                Returns:
-                    int: The index in the source sentence to align with the specified
-                    index in the target sentence
-                """
-                return int(round(k * i))
-
-            return uniform_alignment
+            return alignment.uniform_alignment(len(source), len(target))
         if self.__alignment == "stepwise":
-            def stepwise_alignment(i: int) -> int:
-                if i == I:
-                    return J
-                return min(i, J)
-            
-            return stepwise_alignment
+            return alignment.stepwise_alignment(len(source), len(target))
+        if callable(self.__alignment):
+            return self.__alignment
     
+
     def __get_list_item_safe(self, ls: List[Any], index: int) -> Any:
         """
         Private function to get an item from a list at a specified index. 
@@ -126,13 +111,8 @@ class Batcher():
         Returns:
             Any: Item at specified index or first/last item if index is out of bounds
         """
-        if index <= 0:
-            return ls[0]
-        if index >= len(ls):
-            return ls[-1]
-        
-        return ls[index]
-    
+        return get_list_item_safe(ls, index)
+
     def __initialize_batches(self, total_rows: int) -> None:
         """
         Private function for initializing batches of data for a machine translation model
